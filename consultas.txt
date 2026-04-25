@@ -1,0 +1,44 @@
+// Restricciones
+CREATE CONSTRAINT FOR (a:AreaConocimiento) REQUIRE a.uri IS UNIQUE;
+CREATE CONSTRAINT FOR (t:Titulacion) REQUIRE t.uri IS UNIQUE;
+CREATE CONSTRAINT FOR (asig:Asignatura) REQUIRE asig.codigo IS UNIQUE;
+
+// ---------- Creación de los índices ----------
+// Índice para buscar rápidamente las áreas por su nombre en el desplegable
+CREATE INDEX indice_area_nombre FOR (a:AreaConocimiento) ON (a.nombre);
+
+// Índice para ordenar o buscar rápidamente las titulaciones
+CREATE INDEX indice_titulacion_nombre FOR (t:Titulacion) ON (t.nombre);
+
+// Índice para buscar asignaturas por su nombre
+CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
+
+// Cargar Áreas Conocimiento (AreaConocimiento.csv)
+LOAD CSV WITH HEADERS FROM 'file:///AreaConocimiento.csv' AS row
+MERGE (a:AreaConocimiento {uri: row.uri})
+SET a.nombre = row.foaf_name, a.codigo = row.aiiso_code;
+
+// Cargar Titulaciones (AcademicDegree.csv)
+LOAD CSV WITH HEADERS FROM 'file:///AcademicDegree.csv' AS row
+MERGE (t:Titulacion {uri: row.uri})
+SET t.nombre = row.foaf_name,
+    t.codigo = row.aiiso_code;
+
+// 3. Cargar Asignaturas (AsignaturaTitulacion.csv)
+LOAD CSV WITH HEADERS FROM 'file:///AsignaturaTitulacion.csv' AS row
+MERGE (asig:Asignatura {codigo: row.ou_asignatura_code})
+SET asig.nombre = row.ou_asignatura_courseTitle,
+    asig.creditos = row.ou_asignatura_ects
+
+// ---------- Creación de las relaciones ----------
+
+// Relación Asignatura -> Titulacion
+WITH row, asig
+MATCH (t:Titulacion {uri: row.uriTitulacion})
+MERGE (asig)-[:SE_IMPARTE_EN]->(t)
+
+// Relación Asignatura -> Área (Manejo de múltiples áreas por asignatura)
+WITH row, asig
+UNWIND split(row.areasConocimiento, ' ') AS areaUri
+MATCH (a:AreaConocimiento {uri: trim(areaUri)})
+MERGE (asig)-[:PERTENECE_A]->(a);
