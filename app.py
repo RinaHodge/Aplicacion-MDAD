@@ -79,7 +79,7 @@ try:
         st.warning("No se han encontrado áreas. Asegúrate de haber cargado los CSV en Neo4j.")
     else:
         # 2. Selector múltiple para el usuario
-        st.subheader("Paso 1: Selecciona tus áreas de interés")
+        st.subheader("Selecciona tus áreas de interés")
         areas_elegidas = st.multiselect(
             "Puedes elegir una o varias (Ej: Informática, Matemáticas, Derecho...):", 
             options=lista_areas,
