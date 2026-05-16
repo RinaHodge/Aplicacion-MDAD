@@ -37,29 +37,30 @@ def obtener_areas():
     return []
 
 def recomendar_titulaciones(areas_seleccionadas):
-    """Busca las titulaciones con más asignaturas en las áreas elegidas"""
+    """Busca las titulaciones asociadas a las áreas elegidas y calcula su estado de extinción"""
     query = """
     MATCH (a:AreaConocimiento)<-[:PERTENECE_A]-(asig:Asignatura)-[:SE_IMPARTE_EN]->(t:Titulacion)
     WHERE a.nombre IN $areas
     WITH t, asig,
          CASE
-             WHEN t.ou_fechaExtincion IS NOT NULL AND trim(toString(t.ou_fechaExtincion)) <> "" THEN date(toString(t.ou_fechaExtincion))
+             WHEN t.ou_cursoExtincion IS NOT NULL AND toString(t.ou_cursoExtincion) <> "" 
+             THEN toInteger(left(trim(toString(t.ou_cursoExtincion)), 4))
              ELSE NULL
-         END AS fecha_extincion,
+         END AS anio_extincion,
          CASE
-             WHEN t.ou_fechaInicioExtincion IS NOT NULL AND trim(toString(t.ou_fechaInicioExtincion)) <> "" THEN date(toString(t.ou_fechaInicioExtincion))
+             WHEN t.ou_cursoInicioExtincion IS NOT NULL AND toString(t.ou_cursoInicioExtincion) <> "" 
+             THEN toInteger(left(trim(toString(t.ou_cursoInicioExtincion)), 4))
              ELSE NULL
-         END AS fecha_inicio_extincion
+         END AS anio_inicio_extincion
     RETURN t.nombre AS Titulacion, 
             count(asig) AS `Numero Asignaturas`, 
             sum(coalesce(toFloat(replace(asig.creditos, ',', '.')), 0.0)) AS `Creditos Totales`,
             CASE
-                WHEN fecha_extincion IS NOT NULL AND fecha_extincion <= date() THEN "EXTINTA"
-                WHEN fecha_extincion IS NOT NULL OR fecha_inicio_extincion IS NOT NULL THEN "EN PROCESO"
-                ELSE "NO"
+                WHEN anio_extincion IS NOT NULL AND anio_extincion <= date().year THEN "EXTINTA"
+                WHEN anio_extincion IS NOT NULL OR anio_inicio_extincion IS NOT NULL THEN "EN PROCESO"
+                ELSE "VIGENTE"
             END AS `Extincion`
         ORDER BY `Numero Asignaturas` DESC
-    LIMIT 15
     """
     return run_query(query, {"areas": areas_seleccionadas})
 
@@ -158,15 +159,11 @@ try:
                         .properties(height=400)
                         .configure_view(strokeWidth=0)
                     )
-                    st.altair_chart(chart, use_container_width=True)
+                    st.altair_chart(chart, width="stretch")
                     
                     # --- Desplegable con todos los resultados encontrados ---
                     with st.expander("Ver tabla de datos detallada"):
-                        st.dataframe(
-                            df_resultados,
-                            use_container_width=True,
-                            hide_index=True
-                        )
+                        st.dataframe(df_resultados, width="stretch", hide_index=True)
 except Neo4jError as e:
     st.error("❌ Error de consulta en Neo4j. Revisa tipos de datos o sintaxis de Cypher.")
     st.exception(e)

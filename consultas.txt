@@ -1,4 +1,7 @@
-// Restricciones
+// CONSULTAR PARA IMPORTAR DATOS A NEO4J
+// Copiar y pegar el archivo en su totalidad, y pegarlo y ejecutarlo en la pantalla Query de neo4j Desktop
+
+// ---------- Creación de las restricciones para nuestras tablas ----------
 CREATE CONSTRAINT FOR (a:AreaConocimiento) REQUIRE a.uri IS UNIQUE;
 CREATE CONSTRAINT FOR (t:Titulacion) REQUIRE t.uri IS UNIQUE;
 CREATE CONSTRAINT FOR (asig:Asignatura) REQUIRE asig.codigo IS UNIQUE;
@@ -13,6 +16,7 @@ CREATE INDEX indice_titulacion_nombre FOR (t:Titulacion) ON (t.nombre);
 // Índice para buscar asignaturas por su nombre
 CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
 
+// ---------- Carga de archivos CSV ----------
 // Cargar Áreas Conocimiento (AreaConocimiento.csv)
 LOAD CSV WITH HEADERS FROM 'file:///AreaConocimiento.csv' AS row
 MERGE (a:AreaConocimiento {uri: row.uri})
@@ -22,9 +26,11 @@ SET a.nombre = row.foaf_name, a.codigo = row.aiiso_code;
 LOAD CSV WITH HEADERS FROM 'file:///AcademicDegree.csv' AS row
 MERGE (t:Titulacion {uri: row.uri})
 SET t.nombre = row.foaf_name,
-    t.codigo = row.aiiso_code;
+    t.codigo = row.aiiso_code,
+    t.ou_cursoExtincion = row.ou_cursoExtincion, 
+    t.ou_cursoInicioExtincion = row.ou_cursoInicioExtincion;
 
-// 3. Cargar Asignaturas (AsignaturaTitulacion.csv)
+// Cargar Asignaturas (AsignaturaTitulacion.csv)
 LOAD CSV WITH HEADERS FROM 'file:///AsignaturaTitulacion.csv' AS row
 MERGE (asig:Asignatura {codigo: row.ou_asignatura_code})
 SET asig.nombre = row.ou_asignatura_courseTitle,
