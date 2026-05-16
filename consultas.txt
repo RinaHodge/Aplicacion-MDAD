@@ -39,6 +39,8 @@ MERGE (asig:Asignatura {codigo: row.ou_asignatura_code})
 SET asig.nombre = row.ou_asignatura_courseTitle,
     asig.creditos = row.ou_asignatura_ects
 
+// ---------- Creación de las relaciones ----------
+
 // Relación Asignatura -> Titulacion
 WITH row, asig
 MATCH (t:Titulacion {uri: row.uriTitulacion})
