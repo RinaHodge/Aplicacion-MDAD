@@ -204,7 +204,7 @@ with tab_principal:
         st.exception(e)
 
 with tab_clustering:
-    st.header("Agrupación de carreras mediante KMeans (clusteing)")
+    st.header("Agrupación de carreras mediante KMeans (clustering)")
     
     if st.button("📊 Generar Visualización K-Means", type="primary", key="btn_kmeans"):
         with st.spinner("Procesando datos y agrupando..."):
