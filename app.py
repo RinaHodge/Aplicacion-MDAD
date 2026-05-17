@@ -86,7 +86,8 @@ def KMeans_clustering():
     # Pasar a formato de matriz para KMeans
     pivot_df = df.pivot_table(index='Titulacion', columns='Area', values='NumAsignaturas', fill_value=0)
     X_norm = normalize(pivot_df.values)
-    
+
+        
     k = 5              # Número de clusters 
     kmeans = KMeans(n_clusters=k, random_state=23)
     pivot_df['Cluster'] = kmeans.fit_predict(X_norm)
@@ -213,37 +214,38 @@ with tab_clustering:
             if resultado is not None:
                 df_clusters, k = resultado
                 
-                #Identificar eje X y eje Y para el gráfico
-                columnas_areas = [col for col in df_clusters.columns if col not in ['Titulacion', 'Cluster']]
-                
-                varianzas = df_clusters[columnas_areas].var().sort_values(ascending=False)
+                st.write(df_clusters[['Titulacion', 'Cluster']].sort_values('Cluster'))
 
-                atributo1 = varianzas.index[0]
-                atributo2 = varianzas.index[1]
-                
-                # --- Visualización con matplotlib ---
-                fig, ax = plt.subplots(figsize=(10, 7))
-                
-                scatter = ax.scatter(
-                    df_clusters[atributo1], 
-                    df_clusters[atributo2], 
-                    c=df_clusters['Cluster'], 
-                    cmap='viridis', 
-                    s=50 
+                cluster_counts = df_clusters['Cluster'].value_counts().reset_index()
+                cluster_counts.columns = ['Cluster', 'Cantidad']
+                cluster_counts['Porcentaje'] = cluster_counts['Cantidad'] / cluster_counts['Cantidad'].sum() * 100
+
+                # Cuántas titulaciones hay en cada cluster
+                st.subheader("📊 Tamaño de cada cluster")
+                pie = alt.Chart(cluster_counts).mark_arc(innerRadius=50).encode(
+                    theta=alt.Theta(field="Cantidad", type="quantitative"),
+                    color=alt.Color(field="Cluster", type="nominal"),
+                    tooltip=["Cluster", "Cantidad", alt.Tooltip("Porcentaje:Q", format=".1f")],
                 )
+                st.altair_chart(pie, use_container_width=True)
+
+                columnas_areas = [col for col in df_clusters.columns if col not in ['Titulacion', 'Cluster']]
+                cluster_profiles = df_clusters.groupby('Cluster')[columnas_areas].sum()
+                                
+
+                st.subheader("🧠 Perfil de cada cluster (áreas predominantes)")
+                for c in cluster_profiles.index:
+                    st.markdown(f"### Cluster {c}")
+
+                    top_areas = cluster_profiles.loc[c].sort_values(ascending=False).head(5)
+
+                    st.write(top_areas)
+                # Opcional: detalle por cluster
+                with st.expander("Ver titulaciones por cluster"):
+                    for c in sorted(df_clusters['Cluster'].unique()):
+                        st.markdown(f"### Cluster {c}")
+                        st.write(df_clusters[df_clusters['Cluster'] == c]['Titulacion'])
+
                 
-                ax.set_title("K-Means con " + str(k) + " clústeres")
-                ax.set_xlabel(f'Área: {atributo1}')
-                ax.set_ylabel(f'Área: {atributo2}')
-                
-                st.pyplot(fig)
-                
-                st.success("Gráfico generado correctamente.")
-                
-                # Opcional: Mostrar los grupos en una tabla debajo
-                with st.expander("Ver tabla de Titulaciones y sus Grupos"):
-                    st.dataframe(df_clusters[['Titulacion', 'Cluster']].sort_values('Cluster'), hide_index=True)
-            else:
-                st.error("Hubo un problema al generar los datos del clustering.")
 
     
