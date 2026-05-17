@@ -1,22 +1,8 @@
 // CONSULTAR PARA IMPORTAR DATOS A NEO4J
 // Copiar y pegar el archivo en su totalidad, y pegarlo y ejecutarlo en la pantalla Query de neo4j Desktop
 
-// ---------- Creación de las restricciones para nuestras tablas ----------
-CREATE CONSTRAINT FOR (a:AreaConocimiento) REQUIRE a.uri IS UNIQUE;
-CREATE CONSTRAINT FOR (t:Titulacion) REQUIRE t.uri IS UNIQUE;
-CREATE CONSTRAINT FOR (asig:Asignatura) REQUIRE asig.codigo IS UNIQUE;
+// ---------- Carga de archivos CSV y relaciones ----------
 
-// ---------- Creación de los índices ----------
-// Índice para buscar rápidamente las áreas por su nombre en el desplegable
-CREATE INDEX indice_area_nombre FOR (a:AreaConocimiento) ON (a.nombre);
-
-// Índice para ordenar o buscar rápidamente las titulaciones
-CREATE INDEX indice_titulacion_nombre FOR (t:Titulacion) ON (t.nombre);
-
-// Índice para buscar asignaturas por su nombre
-CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
-
-// ---------- Carga de archivos CSV ----------
 // Cargar Áreas Conocimiento (AreaConocimiento.csv)
 LOAD CSV WITH HEADERS FROM 'file:///AreaConocimiento.csv' AS row
 MERGE (a:AreaConocimiento {uri: row.uri})
@@ -35,8 +21,6 @@ LOAD CSV WITH HEADERS FROM 'file:///AsignaturaTitulacion.csv' AS row
 MERGE (asig:Asignatura {codigo: row.ou_asignatura_code})
 SET asig.nombre = row.ou_asignatura_courseTitle,
     asig.creditos = row.ou_asignatura_ects
-
-// ---------- Creación de las relaciones ----------
 
 // Relación Asignatura -> Titulacion
 WITH row, asig
@@ -65,4 +49,3 @@ CREATE INDEX indice_titulacion_nombre FOR (t:Titulacion) ON (t.nombre);
 
 // Índice para buscar asignaturas por su nombre
 CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
-
