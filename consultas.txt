@@ -1,4 +1,4 @@
-// CONSULTAR PARA IMPORTAR DATOS A NEO4J
+// CONSULTAS PARA IMPORTAR DATOS A NEO4J
 // Copiar y pegar el archivo en su totalidad, y pegarlo y ejecutarlo en la pantalla Query de neo4j Desktop
 
 // ---------- Creación de las restricciones para nuestras tablas ----------

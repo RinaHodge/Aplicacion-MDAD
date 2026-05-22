@@ -38,8 +38,7 @@ def obtener_areas():
     df = run_query(query)
     if not df.empty:
         areas = [str(a).strip() for a in df['area'].tolist() if pd.notna(a)]
-        etiquetas_no_deseadas = {"select all", "seleccionar todo"}
-        return [a for a in areas if a.lower() not in etiquetas_no_deseadas]
+        return [a for a in areas if a.lower()]
     return []
 
 def recomendar_titulaciones(areas_seleccionadas):
@@ -71,6 +70,9 @@ def recomendar_titulaciones(areas_seleccionadas):
     """
     return run_query(query, {"areas": areas_seleccionadas})
 
+# -----------------------------------------
+# Clustering con K-MEANS
+# -----------------------------------------
 def KMeans_clustering():
     """Realiza el algoritmo de KMeans para agrupar titulaciones similares según su carga lectiva en áreas de conocimiento"""
     query = """
@@ -101,6 +103,7 @@ st.set_page_config(page_title="Recomendador UEx", page_icon="🎓", layout="wide
 st.title("🎓 Descubre tu Titulación Ideal en la UEx")
 tab_principal, tab_clustering = st.tabs(["Recomendación de carreras", "Análisis de Clusters"])
 
+# Pestaña aplicacion principal 
 with tab_principal:
     st.markdown("Selecciona las áreas de conocimiento que más te atraen y te recomendaremos qué estudiar en base a la carga lectiva real de cada carrera.")
 
@@ -203,8 +206,9 @@ with tab_principal:
         st.error("❌ Error inesperado en la aplicación.")
         st.exception(e)
 
+# Pestaña K-Means clustering 
 with tab_clustering:
-    st.header("Agrupación de carreras mediante KMeans (clusteing)")
+    st.header("Agrupación de carreras mediante KMeans (clustering)")
     
     if st.button("📊 Generar Visualización K-Means", type="primary", key="btn_kmeans"):
         with st.spinner("Procesando datos y agrupando..."):
@@ -227,7 +231,7 @@ with tab_clustering:
                     color=alt.Color(field="Cluster", type="nominal"),
                     tooltip=["Cluster", "Cantidad", alt.Tooltip("Porcentaje:Q", format=".1f")],
                 )
-                st.altair_chart(pie, use_container_width=True)
+                st.altair_chart(pie, width='stretch')
 
                 columnas_areas = [col for col in df_clusters.columns if col not in ['Titulacion', 'Cluster']]
                 cluster_profiles = df_clusters.groupby('Cluster')[columnas_areas].sum()
