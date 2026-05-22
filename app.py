@@ -244,7 +244,7 @@ with tab_clustering:
                     top_areas = cluster_profiles.loc[c].sort_values(ascending=False).head(5)
 
                     st.write(top_areas)
-                # Opcional: detalle por cluster
+                # Detalle por cluster
                 with st.expander("Ver titulaciones por cluster"):
                     for c in sorted(df_clusters['Cluster'].unique()):
                         st.markdown(f"### Cluster {c}")
