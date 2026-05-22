@@ -1,10 +1,6 @@
 // CONSULTAR PARA IMPORTAR DATOS A NEO4J
 // Copiar y pegar el archivo en su totalidad, y pegarlo y ejecutarlo en la pantalla Query de neo4j Desktop
 
-<<<<<<< HEAD
-// ---------- Carga de archivos CSV y relaciones ----------
-
-=======
 // ---------- Creación de las restricciones para nuestras tablas ----------
 
 CREATE CONSTRAINT FOR (a:AreaConocimiento) REQUIRE a.uri IS UNIQUE;
@@ -24,7 +20,6 @@ CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
 
 // ---------- Carga de archivos CSV y relaciones ----------
 
->>>>>>> e2489e2a338e3a02f13f5f7b1bdd2f2868007c18
 // Cargar Áreas Conocimiento (AreaConocimiento.csv)
 LOAD CSV WITH HEADERS FROM 'file:///AreaConocimiento.csv' AS row
 MERGE (a:AreaConocimiento {uri: row.uri})
@@ -53,25 +48,4 @@ MERGE (asig)-[:SE_IMPARTE_EN]->(t)
 WITH row, asig
 UNWIND split(row.areasConocimiento, ' ') AS areaUri
 MATCH (a:AreaConocimiento {uri: trim(areaUri)})
-<<<<<<< HEAD
 MERGE (asig)-[:PERTENECE_A]->(a);
-
-// ---------- Creación de las restricciones para nuestras tablas ----------
-
-CREATE CONSTRAINT FOR (a:AreaConocimiento) REQUIRE a.uri IS UNIQUE;
-CREATE CONSTRAINT FOR (t:Titulacion) REQUIRE t.uri IS UNIQUE;
-CREATE CONSTRAINT FOR (asig:Asignatura) REQUIRE asig.codigo IS UNIQUE;
-
-// ---------- Creación de los índices ----------
-
-// Índice para buscar rápidamente las áreas por su nombre en el desplegable
-CREATE INDEX indice_area_nombre FOR (a:AreaConocimiento) ON (a.nombre);
-
-// Índice para ordenar o buscar rápidamente las titulaciones
-CREATE INDEX indice_titulacion_nombre FOR (t:Titulacion) ON (t.nombre);
-
-// Índice para buscar asignaturas por su nombre
-CREATE INDEX indice_asignatura_nombre FOR (asig:Asignatura) ON (asig.nombre);
-=======
-MERGE (asig)-[:PERTENECE_A]->(a);
->>>>>>> e2489e2a338e3a02f13f5f7b1bdd2f2868007c18
